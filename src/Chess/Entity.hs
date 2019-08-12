@@ -6,7 +6,7 @@ where
 
 import           Chess.Component
 import           Data.Ecstasy
-import           Board                          ( emptyBoard )
+import           Data.Board                     ( emptyBoard )
 
 newPiece :: Belongs -> (Int, Int) -> Piece -> Entity
 newPiece whose pos pz = newEntity { position = Just pos

@@ -8,14 +8,15 @@ module Chess.Component where
 
 import           Data.Ecstasy
 import qualified Data.Map                      as Map
+import Data.Board
 
 class Stats a where
     name :: a -> String
     cost :: a -> Maybe Int
-    rangeDamage :: a -> (Int, Int)
+    attackDamage :: a -> (Int, Int)
+    attackRange :: a -> Int
     maxHealth :: a -> Int
     maxMana :: a -> Int
-    range :: a -> Int
     member :: a -> [Member]
     priority :: a -> Priority
     level :: a -> Level
@@ -57,12 +58,7 @@ data Status = Stunned Int | Silenced Int
 data Focus a = Attacking a | Approaching a | Casting (Int, Int) | Waiting
     deriving Show
 
-data Node a = Node {
-    value :: Maybe a,
-    connected :: [(Int, Int)]
-} deriving (Show, Eq)
 
-type Board = Map.Map (Int, Int) (Node Ent)
 
 type Field s a = Component s 'Field a
 type Unique s a = Component s 'Unique a
@@ -88,7 +84,7 @@ instance Stats Piece where
         (Haybale _) -> "Haybale?"
         Nercow      -> "Nercow"
 
-    rangeDamage = \case
+    attackDamage = \case
         (Farmer  lvl) -> pick lvl [(5, 15), (10, 20), (20, 30)]
         (Peter   lvl) -> pick lvl [(10, 10), (5, 30), (2, 50)]
         (Cow     lvl) -> pick lvl [(0, 0), (0, 0), (0, 0)]
@@ -109,7 +105,7 @@ instance Stats Piece where
         (Haybale _) -> 100
         Nercow      -> 0
 
-    range = \case
+    attackRange = \case
         (Farmer  _) -> 1
         (Peter   _) -> 3
         (Cow     _) -> 0

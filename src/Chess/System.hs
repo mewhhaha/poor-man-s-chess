@@ -13,8 +13,8 @@ import           Helper.Ecstasy
 import           Helper.Any
 import           Chess.Component
 import           Chess.Entity
-import           Event
-import           Board
+import           Chess.Event
+import           Data.Board
 import           System.Random
 import           Control.Monad.State
 import           Debug.Trace
@@ -53,7 +53,7 @@ movementSystem board =
 
         merge $ fromMaybe (b, []) $ do
             that <- flip Map.lookup (invert b) =<< tar
-            toMaybe (distance board (this, that) > range pie)
+            toMaybe (distance board (this, that) > attackRange pie)
                     (movingEvents pie (this, that) b)
 
 
@@ -82,10 +82,12 @@ attackSystem board = do
 
             merge $ fromMaybe (g, []) $ do
                 that <- flip Map.lookup (invert board) =<< tar
-                let (i, g') = randomR (rangeDamage pie) g
+                let (i, g') = randomR (attackDamage pie) g
                 toMaybe
-                    (distance board (this, that) <= range pie)
-                    (g', attackingEvents (range pie, i) (this, that) board)
+                    (distance board (this, that) <= attackRange pie)
+                    ( g'
+                    , attackingEvents (attackRange pie, i) (this, that) board
+                    )
 
 
 deathSystem :: EventSystem

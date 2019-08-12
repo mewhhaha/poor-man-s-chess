@@ -19,9 +19,9 @@ import           Control.Concurrent
 import           Chess.Entity
 import           Chess.Component
 import           Chess.System
-import           Board
+import           Chess.Event
+import           Data.Board
 import           Helper.Any
-import           Event
 
 eval :: EventSystem -> ([Event] -> System' ()) -> EventSystem
 eval sys ev = do

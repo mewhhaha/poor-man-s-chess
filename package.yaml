@@ -16,5 +16,5 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hautochess
+      - poor-man-s-chess
       - random

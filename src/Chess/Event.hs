@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ViewPatterns #-}
-module Event
+module Chess.Event
     ( initialEvents
     , finishingEvents
     , waitingEvents
@@ -21,14 +21,13 @@ import           Data.Maybe
 import qualified Data.Map                      as Map
 import           Control.Arrow
 import           Chess.Component
-import           Board                          ( findPath
+import           Data.Board                     ( findPath
                                                 , findTarget
                                                 , movePiece
                                                 , distance
+                                                , manhattan
                                                 , Board
                                                 )
-import           Debug.Trace
-
 data Event where
     Place ::Belongs -> (Int, Int) -> Piece -> Event
     Move ::(Int, Int) -> (Int, Int) -> Event
@@ -45,8 +44,8 @@ data Event where
     deriving Show
 
 data InitialState = InitialState {
-    myPieces :: [((Int, Int), Piece)],
-    opPieces :: [((Int, Int), Piece)],
+    mys :: [((Int, Int), Piece)],
+    ops :: [((Int, Int), Piece)],
     boardSize :: Int
 }
 
@@ -54,8 +53,8 @@ initialEvents :: InitialState -> [Event]
 initialEvents state = concat
     [ [Start]
     , [Board (boardSize state)]
-    , map (uncurry (Place My)) (myPieces state)
-    , map (uncurry (Place Op)) (opPieces state)
+    , map (uncurry (Place My)) (mys state)
+    , map (uncurry (Place Op)) (ops state)
     ]
 
 finishingEvents :: [Belongs] -> Maybe Event
@@ -70,7 +69,7 @@ waitingEvents = []
 targettingEvents
     :: Board -> ((Int, Int), Priority, (Int, Int) -> Bool) -> [Event]
 targettingEvents board (this, pri, isEnemy) = fromMaybe [] $ do
-    target <- findTarget board (pri, this, isEnemy)
+    target <- findTarget board (manhattan, this, isEnemy)
     pure [ChangeTarget this target]
 
 stunnedEvents :: ((Int, Int), Int) -> [Event]
@@ -82,7 +81,7 @@ stunnedEvents (pos, n) =
 castingEvents = undefined
 
 movingEvents :: Piece -> ((Int, Int), (Int, Int)) -> Board -> (Board, [Event])
-movingEvents (range -> r) (this, that) board = fromMaybe (board, []) $ do
+movingEvents (attackRange -> r) (this, that) board = fromMaybe (board, []) $ do
     path <- findPath board (this, that)
     case path of
         (now : next : _ : _) ->

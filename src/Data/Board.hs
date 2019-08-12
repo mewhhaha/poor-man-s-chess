@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Board
+module Data.Board
     ( emptyBoard
     , findPath
     , findTarget
@@ -11,7 +11,7 @@ module Board
     , manhattan
     , invert
     , Board
-    , Node
+    , Node(..)
     )
 where
 
@@ -23,8 +23,13 @@ import           Data.Function
 import           Data.Ecstasy
 import           Control.Arrow
 import           Data.Tuple
-import           Chess.Component
-import qualified Debug.Trace                   as Debug
+
+data Node a = Node {
+    value :: Maybe a,
+    connected :: [(Int, Int)]
+} deriving (Show, Eq)
+
+type Board = Map.Map (Int, Int) (Node Ent)
 
 neighbours :: Int -> (Int, Int) -> [(Int, Int)]
 neighbours size (i, j) = filter
@@ -78,11 +83,13 @@ movePiece (from, to) = uncurry (placePiece to) . removePiece from
 
 
 findTarget
-    :: Board -> (Priority, (Int, Int), (Int, Int) -> Bool) -> Maybe (Int, Int)
-findTarget board (_, pos, isTarget) =
+    :: Board
+    -> ((Int, Int) -> (Int, Int) -> Int, (Int, Int), (Int, Int) -> Bool)
+    -> Maybe (Int, Int)
+findTarget board (priority, pos, isTarget) =
     listToMaybe
         . filter isTarget
-        . sortBy (compare `on` manhattan pos)
+        . sortBy (compare `on` priority pos)
         . Map.keys
         $ board
 
